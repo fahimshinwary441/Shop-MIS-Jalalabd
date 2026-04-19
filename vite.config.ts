@@ -17,12 +17,12 @@ export default defineConfig(({mode}) => {
         electron([
           {
             // Main-Process entry point of the Electron App.
-            entry: 'electron/main.ts',
+            entry: path.join(__dirname, 'electron/main.ts'),
             vite: {
               build: {
                 minify: false,
                 lib: {
-                  entry: 'electron/main.ts',
+                  entry: path.join(__dirname, 'electron/main.ts'),
                   formats: ['cjs'],
                   fileName: () => 'main.cjs',
                 },
@@ -36,12 +36,12 @@ export default defineConfig(({mode}) => {
             },
           },
           {
-            entry: 'electron/preload.ts',
+            entry: path.join(__dirname, 'electron/preload.ts'),
             vite: {
               build: {
                 minify: false,
                 lib: {
-                  entry: 'electron/preload.ts',
+                  entry: path.join(__dirname, 'electron/preload.ts'),
                   formats: ['cjs'],
                   fileName: () => 'preload.cjs',
                 },
