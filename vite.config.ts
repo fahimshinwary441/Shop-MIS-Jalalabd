@@ -40,11 +40,6 @@ export default defineConfig(({ mode }) => {
           },
           {
             entry: path.resolve(__dirname, 'electron/preload.ts'),
-            onclean: (options) => {
-              if (process.env.NODE_ENV === 'production') {
-                options.clean(options.outDir);
-              }
-            },
             vite: {
               build: {
                 minify: false,

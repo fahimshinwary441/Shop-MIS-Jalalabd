@@ -16,6 +16,9 @@ export default function LicenseGuard({ children }: LicenseGuardProps) {
 
   useEffect(() => {
     checkLicense();
+    // Check every hour
+    const interval = setInterval(checkLicense, 1000 * 60 * 60);
+    return () => clearInterval(interval);
   }, []);
 
   const checkLicense = async () => {

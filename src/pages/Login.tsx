@@ -21,8 +21,11 @@ export default function Login({ onLogin, t, language }: LoginProps) {
     setErrors({});
     
     const newErrors: Record<string, string> = {};
-    if (!username) newErrors.username = 'Username is required';
-    if (!password) newErrors.password = 'Password is required';
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedUsername) newErrors.username = 'Username is required';
+    if (!trimmedPassword) newErrors.password = 'Password is required';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -33,7 +36,10 @@ export default function Login({ onLogin, t, language }: LoginProps) {
     
     try {
       if (window.electronAPI) {
-        const user = await window.electronAPI.authenticate({ username, password });
+        const user = await window.electronAPI.authenticate({ 
+          username: trimmedUsername, 
+          password: trimmedPassword 
+        });
         if (user) {
           onLogin(user);
         } else {
@@ -43,7 +49,10 @@ export default function Login({ onLogin, t, language }: LoginProps) {
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            username: trimmedUsername, 
+            password: trimmedPassword 
+          })
         });
 
         if (response.ok) {

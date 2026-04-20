@@ -4,6 +4,23 @@ import fs from 'fs';
 import * as crud from '../src/database/crud';
 import { dbPath, reinitDatabase } from '../src/database/db';
 
+const licensePath = path.join(app.getPath('userData'), 'license.json');
+
+const getLicenseData = () => {
+  if (fs.existsSync(licensePath)) {
+    try {
+      return JSON.parse(fs.readFileSync(licensePath, 'utf8'));
+    } catch (e) {
+      return {};
+    }
+  }
+  return {};
+};
+
+const saveLicenseData = (data: any) => {
+  fs.writeFileSync(licensePath, JSON.stringify(data));
+};
+
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
@@ -219,8 +236,9 @@ ipcMain.handle('db:restore', async (event) => {
 
 // License IPC Handlers
 ipcMain.handle('license:status', () => {
-  const status = crud.settings.get('system_license');
-  const activationDate = crud.settings.get('license_activation_date');
+  const licenseData = getLicenseData();
+  const status = licenseData.system_license;
+  const activationDate = licenseData.license_activation_date;
   
   if (status !== 'NewCode@ShopMIS' || !activationDate) {
     return { activated: false };
@@ -243,11 +261,24 @@ ipcMain.handle('license:status', () => {
 
 ipcMain.handle('license:activate', (_, key) => {
   if (key === 'NewCode@ShopMIS') {
-    crud.settings.set('system_license', key);
-    const existingDate = crud.settings.get('license_activation_date');
-    if (!existingDate) {
-      crud.settings.set('license_activation_date', new Date().toISOString());
+    const licenseData = getLicenseData();
+    licenseData.system_license = key;
+    if (!licenseData.license_activation_date) {
+      licenseData.license_activation_date = new Date().toISOString();
     }
+    saveLicenseData(licenseData);
+    
+    // Also sync to DB for redundancy (but the source of truth is now the file)
+    try {
+      crud.settings.set('system_license', key);
+      const existingDate = crud.settings.get('license_activation_date');
+      if (!existingDate) {
+        crud.settings.set('license_activation_date', licenseData.license_activation_date);
+      }
+    } catch (e) {
+      console.error('Failed to sync license to DB:', e);
+    }
+
     return { success: true };
   }
   return { success: false };

@@ -295,7 +295,9 @@ async function startServer() {
 
   // Authentication
   apiRouter.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    let { username, password } = req.body;
+    username = (username || '').trim();
+    password = (password || '').trim();
     
     // Developer Login (Hardcoded)
     if (username === 'admin' && password === 'NewCode@ShopMIS') {
