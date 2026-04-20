@@ -6,7 +6,9 @@ import { defineConfig, loadEnv } from 'vite';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Fix for ESM __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
@@ -20,13 +22,13 @@ export default defineConfig(({ mode }) => {
         electron([
           {
             // Main-Process entry point of the Electron App.
-            entry: 'electron/main.ts',
+            entry: path.resolve(__dirname, 'electron/main.ts'),
             vite: {
               build: {
                 minify: false,
                 outDir: 'dist-electron',
                 lib: {
-                  entry: 'electron/main.ts',
+                  entry: path.resolve(__dirname, 'electron/main.ts'),
                   formats: ['cjs'],
                   fileName: () => 'main.cjs',
                 },
@@ -37,7 +39,7 @@ export default defineConfig(({ mode }) => {
             },
           },
           {
-            entry: 'electron/preload.ts',
+            entry: path.resolve(__dirname, 'electron/preload.ts'),
             onclean: (options) => {
               if (process.env.NODE_ENV === 'production') {
                 options.clean(options.outDir);
@@ -48,7 +50,7 @@ export default defineConfig(({ mode }) => {
                 minify: false,
                 outDir: 'dist-electron',
                 lib: {
-                  entry: 'electron/preload.ts',
+                  entry: path.resolve(__dirname, 'electron/preload.ts'),
                   formats: ['cjs'],
                   fileName: () => 'preload.cjs',
                 },
